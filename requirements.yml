@@ -39,4 +39,4 @@ roles:
     version: "v7.17.0"
     
   - name: geerlingguy.filebeat
-    version: "4.3.0"
+    version: "3.7.1"
