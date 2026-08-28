@@ -1,0 +1,42 @@
+collections:
+  # Core collections for multi-OS management
+  - name: ansible.posix
+    version: ">=1.5.0"
+  
+  - name: ansible.windows
+    version: ">=1.14.0"
+  
+  - name: community.general
+    version: ">=6.0.0"
+    
+  - name: community.windows
+    version: ">=1.13.0"
+  
+  # Linux-specific collections
+  - name: community.crypto
+    version: ">=2.10.0"
+    
+  - name: containers.podman
+    version: ">=1.10.0"
+    
+  # Windows-specific collections
+  - name: chocolatey.chocolatey
+    version: ">=1.4.0"
+
+roles:
+  # Common infrastructure roles from Galaxy
+  - name: geerlingguy.security
+    version: "2.0.1"
+    
+  - name: geerlingguy.firewall
+    version: "2.5.0"
+    
+  - name: geerlingguy.ntp
+    version: "2.3.0"
+    
+  # Monitoring and logging
+  - name: elastic.elasticsearch
+    version: "v7.17.0"
+    
+  - name: geerlingguy.filebeat
+    version: "4.3.0"
