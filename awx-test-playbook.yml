@@ -1,0 +1,79 @@
+---
+# awx-test-playbook.yml
+#
+# A minimal playbook for validating a new AWX Job Template end-to-end:
+# project sync, inventory, credentials, and execution environment all
+# working together. Doesn't change anything on the target — safe to
+# run repeatedly.
+#
+# Suggested AWX Job Template settings:
+#   Inventory: any inventory containing the host(s) you want to test
+#              against (or just "localhost" — see note below)
+#   Project:   whichever Project this file lives in
+#   Playbook:  awx-test-playbook.yml
+#   Credentials: a Machine credential for the target host, unless you're
+#              only testing against localhost, in which case none needed
+#
+# To run entirely inside the AWX/EE container without touching any real
+# host, change `hosts: all` below to `hosts: localhost` and add
+# `connection: local` — see the commented-out variant further down.
+
+- name: AWX smoke test
+  hosts: all
+  gather_facts: true
+  become: false
+
+  vars:
+    test_message: "Hello from AWX! If you can see this, the Job Template works."
+
+  tasks:
+    - name: Show basic connectivity info
+      ansible.builtin.debug:
+        msg: >-
+          Reached {{ inventory_hostname }}
+          ({{ ansible_host | default(inventory_hostname) }})
+          as user {{ ansible_user | default(lookup('env', 'USER')) }}
+          at {{ ansible_date_time.iso8601 }}
+
+    - name: Confirm the custom message and any extra vars came through
+      ansible.builtin.debug:
+        msg: "{{ test_message }}"
+
+    - name: Show a few gathered facts (proves gather_facts + connectivity work)
+      ansible.builtin.debug:
+        msg:
+          - "OS family: {{ ansible_facts['os_family'] | default('unknown') }}"
+          - "Hostname:  {{ ansible_facts['hostname'] | default('unknown') }}"
+          - "Python:    {{ ansible_facts['python_version'] | default('unknown') }}"
+
+    - name: Ping module check
+      ansible.builtin.ping:
+
+    - name: Write a harmless timestamped marker file (proves write access)
+      ansible.builtin.copy:
+        dest: "/tmp/awx-test-{{ inventory_hostname }}.txt"
+        content: |
+          AWX test run completed successfully.
+          Job ran at: {{ ansible_date_time.iso8601 }}
+        mode: "0644"
+
+    - name: Read the marker file back
+      ansible.builtin.slurp:
+        src: "/tmp/awx-test-{{ inventory_hostname }}.txt"
+      register: marker_contents
+
+    - name: Show marker file contents
+      ansible.builtin.debug:
+        msg: "{{ marker_contents.content | b64decode }}"
+
+# ---------------------------------------------------------------------------
+# Localhost-only variant (no real target host needed, no credentials needed):
+#
+# - name: AWX smoke test (localhost)
+#   hosts: localhost
+#   connection: local
+#   gather_facts: true
+#   tasks:
+#     - ansible.builtin.debug:
+#         msg: "AWX can reach the execution environment and run a playbook."
+# ---------------------------------------------------------------------------
